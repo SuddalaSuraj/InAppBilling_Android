@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
         {
 
             // Important : Don't Forget to do this.
-            // Grant the entitlement of the corresponding product and if required store the Purchase token somewhere.
+            // Grant the entitlement of the corresponding product to the user and if required store the Purchase token somewhere.
 
             if(!_purchase.isAcknowledged())
             {
