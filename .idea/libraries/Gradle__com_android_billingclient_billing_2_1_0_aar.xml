@@ -9,6 +9,7 @@
     </JAVADOC>
     <SOURCES>
       <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.android.billingclient/billing/2.1.0/87e8b255dd6a861de249bbbda4df1679fd6e58b5/billing-2.1.0-sources.jar!/" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/fd44d29d1e1a6440cc5c4f0859b25205/billing-2.1.0/jars/classes.jar!/" />
     </SOURCES>
   </library>
 </component>

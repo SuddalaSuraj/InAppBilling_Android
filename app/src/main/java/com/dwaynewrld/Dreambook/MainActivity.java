@@ -13,6 +13,8 @@ import com.android.billingclient.api.BillingClient.BillingResponseCode;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.ConsumeParams;
+import com.android.billingclient.api.ConsumeResponseListener;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
 import com.android.billingclient.api.SkuDetails;
@@ -24,6 +26,7 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements PurchasesUpdatedListener {
 
+    BillingClient m_BillingClient;
     TextView responseText = findViewById(R.id.responseText);
     int lines = 0;
     @Override
@@ -47,7 +50,6 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
 
     public void setUpBillingClient(View view)
     {
-        final BillingClient m_BillingClient;
         m_BillingClient = BillingClient.newBuilder(MainActivity.this)
                 .enablePendingPurchases()
                 .setListener(this)
@@ -119,10 +121,57 @@ public class MainActivity extends AppCompatActivity implements PurchasesUpdatedL
 
     @Override
     public void onPurchasesUpdated(BillingResult billingResult, @Nullable List<Purchase> list) {
-        if(billingResult.getResponseCode() == BillingResponseCode.OK)
+        if(billingResult.getResponseCode() == BillingResponseCode.OK && list!=null)
         {
             Toast.makeText(this, "Purchases updated.", Toast.LENGTH_SHORT).show();
             setResponseToView("Purchases updated.");
+            for(Purchase purchase : list)
+            {
+                handlePurchase(purchase);
+            }
         }
+        else if(billingResult.getResponseCode() == BillingResponseCode.USER_CANCELED)
+        {
+            Toast.makeText(this, "Purchased Canceled by user.", Toast.LENGTH_SHORT).show();
+            setResponseToView("Purchased Canceled by user.");
+        }
+        else if(billingResult.getResponseCode() == BillingResponseCode.ITEM_ALREADY_OWNED)
+        {
+            Toast.makeText(this, "The item being requested is already owned.", Toast.LENGTH_SHORT).show();
+            setResponseToView("The item being requested is already owned.");
+        }
+        else
+        {
+            Toast.makeText(this, billingResult.getDebugMessage(), Toast.LENGTH_SHORT).show();
+            setResponseToView(billingResult.getDebugMessage());
+        }
+    }
+    public void handlePurchase(Purchase _purchase)
+    {
+        if(_purchase.getPurchaseState() == Purchase.PurchaseState.PURCHASED)
+        {
+
+            // Important : Don't Forget to do this.
+            // Grant the entitlement of the corresponding product and if required store the Purchase token somewhere.
+
+            if(!_purchase.isAcknowledged())
+            {
+                ConsumeParams consumeParams = ConsumeParams.newBuilder()
+                        .setPurchaseToken(_purchase.getPurchaseToken())
+                        .setDeveloperPayload(_purchase.getDeveloperPayload())
+                        .build();
+                m_BillingClient.consumeAsync(consumeParams, new ConsumeResponseListener() {
+                    @Override
+                    public void onConsumeResponse(BillingResult billingResult, String purchaseToken) {
+                        if(billingResult.getResponseCode() == BillingResponseCode.OK)
+                        {
+                            Toast.makeText(MainActivity.this, "Purchase of token: "+ purchaseToken + "consumed.", Toast.LENGTH_SHORT).show();
+                            setResponseToView("Purchase of token: " + purchaseToken + "consumed.");
+                        }
+                    }
+                });
+            }
+        }
+
     }
 }
